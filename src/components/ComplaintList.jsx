@@ -161,12 +161,9 @@ const ComplaintList = () => {
                               <div className="flex flex-wrap gap-3 mt-2">
                                 {complaint.attachments.map((fileObj, index) => {
                                   const url = fileObj.url;
-                                  console.log("Attachment URL:", url);
-
                                   const isImage = /\.(jpg|jpeg|png|gif)$/i.test(
                                     url
                                   );
-
                                   const fullUrl =
                                     url.startsWith("http") ||
                                     url.startsWith("blob:")
@@ -228,6 +225,17 @@ const ComplaintList = () => {
                                   <span className="font-medium">Note:</span>{" "}
                                   {action.note}
                                 </p>
+                                {action.meetingDetails && (
+                                  <p>
+                                    <span className="font-medium">
+                                      Meeting:
+                                    </span>{" "}
+                                    {new Date(
+                                      action.meetingDetails.datetime
+                                    ).toLocaleString()}{" "}
+                                    ({action.meetingDetails.location})
+                                  </p>
+                                )}
                                 <p className="text-xs text-gray-400">
                                   {new Date(action.createdAt).toLocaleString()}
                                 </p>
