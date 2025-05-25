@@ -6,28 +6,28 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
-  const [emailId, setEmailId] = useState("anirban@gmail.com");
-  const [password, setPassword] = useState("Strong@123");
+  const [emailId, setEmailId] = useState("");
+  const [password, setPassword] = useState("");
    const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    try {
-      const res = await axios.post(
-        BASE_URL + "/login",
-        {
-          emailId,
-          password,
-        },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data));
-      return navigate("/");
-    } catch (err) {
-        setError(err?.response?.data || "Something went wrong");
-    }
-  };
+  try {
+    const res = await axios.post(
+      BASE_URL + "/login",
+      { emailId, password },
+      { withCredentials: true }
+    );
+    dispatch(addUser(res.data));
+    localStorage.setItem("user", JSON.stringify(res.data)); // ✅ add this
+    return navigate("/profile");
+  } catch (err) {
+    setError(err?.response?.data || "Something went wrong");
+  }
+};
+
+
 
  return (
     <div className="flex justify-center my-10">

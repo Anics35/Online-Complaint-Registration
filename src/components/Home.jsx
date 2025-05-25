@@ -11,7 +11,7 @@ const Home = () => {
           transition={{ duration: 0.7 }}
           className="text-3xl md:text-5xl font-bold text-white mb-6"
         >
-          Complaint Registration & Readdressal System
+          Complaint Registration & Redressal System
         </motion.h1>
 
         <motion.p

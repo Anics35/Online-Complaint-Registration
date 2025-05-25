@@ -6,6 +6,7 @@ const SubmitComplaint = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [attachments, setAttachments] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
@@ -14,14 +15,25 @@ const SubmitComplaint = () => {
     e.preventDefault();
 
     try {
-      // Updated the URL to match your backend
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("description", description);
+      formData.append("category", category);
+      attachments.forEach((file) => formData.append("attachments", file));
+
       const response = await axios.post(
-        "http://localhost:3018/complaint/submit",  // Updated URL
-        { title, description, category },
-        { withCredentials: true }
+        "http://localhost:3018/complaint/submit",
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
+
       setSuccess("Complaint submitted successfully!");
-      setTimeout(() => navigate("/profile"), 1500);  // Redirect after success
+      setTimeout(() => navigate("/complaints"), 1500);
     } catch (err) {
       setError("Failed to submit complaint. Please try again.");
     }
@@ -62,12 +74,34 @@ const SubmitComplaint = () => {
               <label className="label">
                 <span className="label-text">Category</span>
               </label>
-              <input
-                type="text"
+              <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="input input-bordered"
+                className="select select-bordered"
                 required
+              >
+                <option value="">Select a category</option>
+                <option value="academic issue">Academic Issue</option>
+                <option value="lab facility">Lab Facility</option>
+                <option value="classroom facility">Classroom Facility</option>
+                <option value="faculty behavior">Faculty Behavior</option>
+                <option value="non-teaching staff">Non-Teaching Staff</option>
+                <option value="course registration">Course Registration</option>
+                <option value="exam/grading">Exam/Grading</option>
+                <option value="others">Others</option>
+              </select>
+            </div>
+
+            {/* File Upload */}
+            <div className="form-control my-2">
+              <label className="label">
+                <span className="label-text">Attachments (optional)</span>
+              </label>
+              <input
+                type="file"
+                className="file-input file-input-bordered"
+                multiple
+                onChange={(e) => setAttachments(Array.from(e.target.files))}
               />
             </div>
 
