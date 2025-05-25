@@ -4,7 +4,7 @@ import { BASE_URL } from "../utils/constants";
 import { motion } from "framer-motion";
 
 const ActionBox = ({ complaintId }) => {
-  const [status, setStatus] = useState("resolved");
+  const [status, setStatus] = useState("under review");
   const [note, setNote] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
   const [meetingTime, setMeetingTime] = useState("");
@@ -14,27 +14,60 @@ const ActionBox = ({ complaintId }) => {
   const [error, setError] = useState("");
 
   const submitAction = async () => {
+    const normalizedStatus = status.trim().toLowerCase();
+
     if (!note.trim()) {
       setError("Note is required.");
       return;
     }
 
-    if (status === "under review" && (!meetingDate || !meetingTime || !venue.trim())) {
-      setError("Meeting date, time, and venue are required for 'Under Review' status.");
+    if (
+      normalizedStatus === "under review" &&
+      (!meetingDate || !meetingTime || !venue.trim())
+    ) {
+      setError(
+        "Meeting date, time, and venue are required for 'Under Review' status."
+      );
       return;
     }
+
+    const datetime =
+      meetingDate && meetingTime
+        ? new Date(`${meetingDate}T${meetingTime}`).toISOString()
+        : null;
+
+    const meetingDetails =
+      normalizedStatus === "under review" && datetime && venue.trim()
+        ? {
+            scheduled: true,
+            datetime,
+            location: venue.trim(),
+            note: "",
+          }
+        : {
+            scheduled: false,
+            datetime: null,
+            location: "",
+            note: "",
+          };
 
     const actionData = {
       status,
       note,
-      ...(status === "under review" && {
-        meeting: {
-          date: meetingDate,
-          time: meetingTime,
-          venue,
-        },
-      }),
+      meeting: meetingDetails,
     };
+
+    //  Debug logs before API call
+    console.log("---- DEBUG SUBMIT ----");
+    console.log("Status:", status);
+    console.log("Note:", note);
+    console.log("Meeting Date:", meetingDate);
+    console.log("Meeting Time:", meetingTime);
+    console.log("Venue:", venue);
+    console.log("Computed Datetime:", datetime);
+    console.log("MeetingDetails:", meetingDetails);
+    console.log("Final Payload to Send:", actionData);
+    console.log("----------------------");
 
     try {
       setLoading(true);
@@ -43,6 +76,7 @@ const ActionBox = ({ complaintId }) => {
         actionData,
         { withCredentials: true }
       );
+
       setMessage(res.data?.message || "Action submitted successfully.");
       setError("");
       setNote("");
@@ -77,6 +111,8 @@ const ActionBox = ({ complaintId }) => {
           <option value="under review">Under Review</option>
           <option value="resolved">Resolved</option>
           <option value="rejected">Rejected</option>
+          <option value="in-progress">In-Progress</option>
+
         </select>
       </div>
 
@@ -90,7 +126,7 @@ const ActionBox = ({ complaintId }) => {
         />
       </div>
 
-      {status === "under review" && (
+      {status.trim().toLowerCase() === "under review" && (
         <div className="space-y-3 mb-4">
           <div>
             <label className="block text-cyan-200 font-medium mb-1">

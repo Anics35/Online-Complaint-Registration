@@ -33,7 +33,7 @@ const Feed = () => {
           icon: "✍️",
         },
         {
-          title: "View My Complaints",
+          title: "View Complaints",
           description: "Track status of your submitted complaints.",
           route: "/complaints",
           icon: "🕵️‍♂️",

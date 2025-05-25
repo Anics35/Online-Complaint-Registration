@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ComplaintList = () => {
   const [complaints, setComplaints] = useState([]);
-  const [actions, setActions] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openSections, setOpenSections] = useState({});
@@ -18,22 +17,7 @@ const ComplaintList = () => {
       const res = await axios.get(`${BASE_URL}/complaint/list`, {
         withCredentials: true,
       });
-      const complaintsData = res.data;
-      setComplaints(complaintsData);
-
-      const actionsResponses = await Promise.all(
-        complaintsData.map((complaint) =>
-          axios.get(`${BASE_URL}/action/get-action/${complaint._id}`, {
-            withCredentials: true,
-          })
-        )
-      );
-
-      const actionsMap = {};
-      complaintsData.forEach((complaint, index) => {
-        actionsMap[complaint._id] = actionsResponses[index].data;
-      });
-      setActions(actionsMap);
+      setComplaints(res.data);
     } catch (err) {
       setError(err?.response?.data || "Error fetching complaints");
     } finally {
@@ -45,22 +29,18 @@ const ComplaintList = () => {
     fetchComplaints();
   }, []);
 
-  const groupByStatus = (complaints) => {
-    return complaints.reduce((acc, complaint) => {
+  const groupByStatus = (complaints) =>
+    complaints.reduce((acc, complaint) => {
       const status = complaint.status || "Unknown";
       if (!acc[status]) acc[status] = [];
       acc[status].push(complaint);
       return acc;
     }, {});
-  };
 
   const groupedComplaints = groupByStatus(complaints);
 
   const toggleSection = (status) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [status]: !prev[status],
-    }));
+    setOpenSections((prev) => ({ ...prev, [status]: !prev[status] }));
   };
 
   if (loading)
@@ -125,10 +105,41 @@ const ComplaintList = () => {
                           </span>{" "}
                           {complaint.description}
                         </p>
+
+                        {/* ✅ Attachments preview */}
+                     {complaint.attachments?.length > 0 && (
+  <div className="mt-4">
+    <p className="font-semibold text-cyan-200 mb-2">Attachments:</p>
+    <div className="flex flex-wrap gap-4">
+      {complaint.attachments.map((file, index) => (
+        <div key={index}>
+          {file.url.endsWith(".pdf") ? (
+            <a
+              href={file.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-300 underline"
+            >
+              View PDF {index + 1}
+            </a>
+          ) : (
+            <a href={file.url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={file.url}
+                alt={`attachment-${index + 1}`}
+                className="w-40 rounded border border-cyan-600 hover:scale-105 transition-transform"
+              />
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+
                         <p>
-                          <span className="font-medium text-cyan-200">
-                            Status:
-                          </span>{" "}
+                          <span className="font-medium text-cyan-200">Status:</span>{" "}
                           {complaint.status}
                         </p>
                         <p>
@@ -143,111 +154,65 @@ const ComplaintList = () => {
                           {new Date(complaint.createdAt).toLocaleString()}
                         </p>
 
-                        {complaint.notes && (
+                        {complaint.actions?.length > 0 && (
                           <div className="mt-4">
-                            <p className="font-semibold text-cyan-200">
-                              Notes:
-                            </p>
-                            <p>{complaint.notes}</p>
-                          </div>
-                        )}
-
-                        {complaint.attachments &&
-                          complaint.attachments.length > 0 && (
-                            <div className="mt-4">
-                              <p className="font-semibold text-cyan-200">
-                                Attachments:
-                              </p>
-                              <div className="flex flex-wrap gap-3 mt-2">
-                                {complaint.attachments.map((fileObj, index) => {
-                                  const url = fileObj.url;
-                                  const isImage = /\.(jpg|jpeg|png|gif)$/i.test(
-                                    url
-                                  );
-                                  const fullUrl =
-                                    url.startsWith("http") ||
-                                    url.startsWith("blob:")
-                                      ? url
-                                      : `${BASE_URL}${
-                                          url.startsWith("/") ? "" : "/"
-                                        }${url}`;
-
-                                  return isImage ? (
-                                    <a
-                                      key={index}
-                                      href={fullUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block"
-                                    >
-                                      <img
-                                        src={fullUrl}
-                                        alt={`Attachment ${index + 1}`}
-                                        className="w-32 h-32 object-cover rounded border border-cyan-700 hover:scale-105 transition"
-                                      />
-                                    </a>
-                                  ) : (
-                                    <a
-                                      key={index}
-                                      href={fullUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="block text-blue-400 underline hover:text-blue-200"
-                                    >
-                                      📎 Attachment {index + 1}
-                                    </a>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-
-                        {actions[complaint._id]?.length > 0 && (
-                          <div className="mt-4">
-                            <p className="font-semibold text-cyan-200">
-                              Actions Taken:
-                            </p>
-                            {actions[complaint._id].map((action) => (
+                            <p className="font-semibold text-cyan-200 mb-2">Actions:</p>
+                            {complaint.actions.map((action) => (
                               <div
                                 key={action._id}
-                                className="bg-[#26445d] p-3 rounded-md mb-2"
+                                className="border border-cyan-600 rounded p-3 mb-2 bg-[#0f1a26]"
                               >
                                 <p>
-                                  <span className="font-medium">Status:</span>{" "}
-                                  {action.status}
+                                  <span className="font-medium">Status:</span> {action.status}
                                 </p>
                                 <p>
                                   <span className="font-medium">By:</span>{" "}
-                                  {action.actionTakenBy.firstName} (
-                                  {action.actionTakenBy.role})
+                                  {action.actionTakenBy?.firstName || "Unknown"} (
+                                  {action.actionTakenBy?.role || "N/A"})
                                 </p>
                                 <p>
-                                  <span className="font-medium">Note:</span>{" "}
-                                  {action.note}
+                                  <span className="font-medium">Remarks:</span> {action.remarks}
                                 </p>
-                                {action.meetingDetails && (
+                                {action.note && (
                                   <p>
-                                    <span className="font-medium">
-                                      Meeting:
-                                    </span>{" "}
-                                    {new Date(
-                                      action.meetingDetails.datetime
-                                    ).toLocaleString()}{" "}
-                                    ({action.meetingDetails.location})
+                                    <span className="font-medium">Note:</span> {action.note}
                                   </p>
                                 )}
-                                <p className="text-xs text-gray-400">
-                                  {new Date(action.createdAt).toLocaleString()}
-                                </p>
+
+                                {action.meetingDetails?.scheduled && (
+                                  <div className="mt-2 bg-[#223344] p-2 rounded text-cyan-300">
+                                    <p>
+                                      <span className="font-semibold">Meeting Scheduled:</span>{" "}
+                                      Yes
+                                    </p>
+                                    <p>
+                                      <span className="font-semibold">Date & Time:</span>{" "}
+                                      {action.meetingDetails.datetime
+                                        ? new Date(action.meetingDetails.datetime).toLocaleString()
+                                        : "N/A"}
+                                    </p>
+                                    <p>
+                                      <span className="font-semibold">Location:</span>{" "}
+                                      {action.meetingDetails.location || "N/A"}
+                                    </p>
+                                    {action.meetingDetails.note && (
+                                      <p>
+                                        <span className="font-semibold">Note:</span>{" "}
+                                        {action.meetingDetails.note}
+                                      </p>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
                         )}
 
-                        {user?.role === "panel" && (
-                          <div className="mt-4">
-                            <ActionBox complaintId={complaint._id} />
-                          </div>
+                        {(user?.role === "panel" || user?.role === "admin") && (
+                          <ActionBox
+                            complaintId={complaint._id}
+                            onUpdate={fetchComplaints}
+                          />
                         )}
                       </motion.div>
                     ))}

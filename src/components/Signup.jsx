@@ -85,7 +85,7 @@ const Signup = () => {
               className="select select-bordered"
             >
               <option value="student">Student</option>
-              <option value="staff">Staff</option>
+              {/* <option value="staff">Staff</option> */}
               <option value="panel">Panel</option>
             </select>
           </label>
