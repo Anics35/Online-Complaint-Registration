@@ -1,7 +1,5 @@
 import { useState } from "react";
 import axios from "axios";
-import { useDispatch } from "react-redux";
-import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 
@@ -11,10 +9,10 @@ const Signup = () => {
     lastName: "",
     emailId: "",
     password: "",
-    rollNumber: "",
     age: "",
     gender: "male",
     role: "student",
+    rollNumber: "",
   });
 
   const [error, setError] = useState("");
@@ -41,7 +39,8 @@ const Signup = () => {
         <div className="card-body">
           <h2 className="card-title justify-center">Signup</h2>
 
-          {["firstName", "lastName", "emailId", "password", "rollNumber", "age"].map((field) => (
+          {/* Basic Fields */}
+          {["firstName", "lastName", "emailId", "password", "age"].map((field) => (
             <label className="form-control w-full max-w-xs my-1" key={field}>
               <div className="label">
                 <span className="label-text capitalize">{field}</span>
@@ -55,6 +54,38 @@ const Signup = () => {
               />
             </label>
           ))}
+
+          {/* Role Selection */}
+          <label className="form-control w-full max-w-xs my-1">
+            <div className="label">
+              <span className="label-text">Role</span>
+            </div>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              className="select select-bordered"
+            >
+              <option value="student">Student</option>
+              <option value="panel">Panel</option>
+            </select>
+          </label>
+
+          {/* Roll Number or Panel ID */}
+          <label className="form-control w-full max-w-xs my-1">
+            <div className="label">
+              <span className="label-text">
+                {formData.role === "student" ? "Roll Number" : "Panel ID"}
+              </span>
+            </div>
+            <input
+              type="text"
+              name="rollNumber"
+              value={formData.rollNumber}
+              onChange={handleChange}
+              className="input input-bordered w-full max-w-xs"
+            />
+          </label>
 
           {/* Gender */}
           <label className="form-control w-full max-w-xs my-1">
@@ -70,23 +101,6 @@ const Signup = () => {
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="others">Others</option>
-            </select>
-          </label>
-
-          {/* Role */}
-          <label className="form-control w-full max-w-xs my-1">
-            <div className="label">
-              <span className="label-text">Role</span>
-            </div>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="select select-bordered"
-            >
-              <option value="student">Student</option>
-              {/* <option value="staff">Staff</option> */}
-              <option value="panel">Panel</option>
             </select>
           </label>
 

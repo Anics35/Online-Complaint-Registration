@@ -8,22 +8,24 @@ const Feed = () => {
 
   if (!user) return null;
 
-  const isPanel = user.role === "panel";
+  const isPanel = user.user?.role === "panel";
+console.log("User from Redux:", user);
 
   const cardData = isPanel
     ? [
+      
         {
           title: "View Complaints",
           description: "See all complaints submitted by users.",
           route: "/complaints",
           icon: "📋",
         },
-        {
-          title: "Add Action",
-          description: "Take action on submitted complaints.",
-          route: "/add-action",
-          icon: "✅",
-        },
+        // {
+        //   title: "Add Action",
+        //   description: "Take action on submitted complaints.",
+        //   route: "/add-action",
+        //   icon: "✅",
+        // },
       ]
     : [
         {
@@ -36,7 +38,7 @@ const Feed = () => {
           title: "View Complaints",
           description: "Track status of your submitted complaints.",
           route: "/complaints",
-          icon: "🕵️‍♂️",
+          icon: "🕵️",
         },
       ];
 
